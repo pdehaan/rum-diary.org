@@ -165,4 +165,11 @@ SiteModel.getSitesForUser = function (email) {
   return this.get({ $or: [ { owner: email }, { 'users.email': email } ] });
 };
 
+/**
+ * Get all sites owned by a user
+ */
+SiteModel.getSitesOwnedByUser = function (email) {
+  return this.get({ owner: email });
+};
+
 module.exports = SiteModel;

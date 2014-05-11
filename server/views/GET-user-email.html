@@ -8,9 +8,19 @@
 {% block body %}
   Email: {{ email }}
 
-  <form method="post" action="/session">
-    <input type="hidden" name="_method" value="delete" />
-    <input type="hidden" name="_csrf" value="{{ csrftoken }}" />
-    <button>Sign out</button>
-  </form>
+  <section>
+    <form method="post" action="/session">
+      <input type="hidden" name="_method" value="delete" />
+      <input type="hidden" name="_csrf" value="{{ csrftoken }}" />
+      <button>Sign out</button>
+    </form>
+  </section>
+
+  <section>
+    <form method="post" action="/user/{{ email }}">
+      <input type="hidden" name="_method" value="delete" />
+      <input type="hidden" name="_csrf" value="{{ csrftoken }}" />
+      <button>Delete my account</button>
+    </form>
+  </section>
 {% endblock %}
