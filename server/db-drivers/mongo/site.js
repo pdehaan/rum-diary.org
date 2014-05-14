@@ -4,6 +4,7 @@
 
 // Site model
 
+const Promise = require('bluebird');
 const Model = require('./model');
 const accessLevels = require('../../lib/access-levels');
 
@@ -166,10 +167,45 @@ SiteModel.getSitesForUser = function (email) {
 };
 
 /**
+ * Remove a user's access to all sites where they are
+ * a readonly user or admin
+ */
+SiteModel.clearAccessLevelByUser = function (email) {
+  var self = this;
+  return this.getSitesForUser(email)
+    .then(function (sites) {
+      // Remove user from all sites they have access to.
+      var promisesToFullfill = [];
+      sites.forEach(function (site) {
+        promisesToFullfill.push(self.setUserAccessLevel(email, site.hostname, accessLevels.NONE));
+      });
+
+      return Promise.all(promisesToFullfill);
+    });
+};
+
+/**
  * Get all sites owned by a user
  */
 SiteModel.getSitesOwnedByUser = function (email) {
   return this.get({ owner: email });
+};
+
+/**
+ * Delete all the sites owned by a user
+ */
+SiteModel.deleteSitesOwnedByUser = function (email) {
+  var self = this;
+  return this.getSitesOwnedByUser(email)
+    .then(function (sites) {
+      // Remove all sites that the user owns.
+      var promisesToFullfill = [];
+      sites.forEach(function (site) {
+        promisesToFullfill.push(self.findOneAndDelete({ hostname: site.hostname }));
+      });
+
+      return Promise.all(promisesToFullfill);
+    });
 };
 
 module.exports = SiteModel;

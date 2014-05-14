@@ -31,29 +31,10 @@ UserModel.getSites = function (email) {
  */
 UserModel.deleteUser = function (email) {
   var self = this;
-  return Site.getSitesOwnedByUser(email)
-    .then(function (sites) {
-      // Remove all sites that the user owns.
-      var promisesToFullfill = [];
-      sites.forEach(function (site) {
-        promisesToFullfill.push(Site.findOneAndDelete({ hostname: site.hostname }));
-      });
-
-      return Promise.all(promisesToFullfill);
-    })
-    .then(function () {
-      return Site.getSitesForUser(email);
-    })
-    .then(function (sites) {
-      // Remove user from all sites they have access to.
-      var promisesToFullfill = [];
-      sites.forEach(function (site) {
-        promisesToFullfill.push(Site.setUserAccessLevel(email, site.hostname, accessLevels.NONE));
-      });
-
-      return Promise.all(promisesToFullfill);
-    })
-    .then(function () {
+  return p.all([
+      Site.deleteSitesOwnedByUser(email),
+      Site.clearAccessLevelByUser(email)
+    ]).then(function () {
       // finally, remove the user.
       return UserModel.findOneAndDelete({ email: email });
     });
